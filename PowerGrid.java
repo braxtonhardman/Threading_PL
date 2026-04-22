@@ -1,4 +1,4 @@
-public class PowerGrid {
+public class PowerGrid implements Runnable {
     private int[][] power_grid;
     private char[][] light_grid;
     private boolean[][] source_grid; 
@@ -10,6 +10,12 @@ public class PowerGrid {
         this.cols = cols;
         this.power_grid = new int[rows][cols];
         this.light_grid = new char[rows][cols];
+        this.source_grid = new boolean[rows][cols];
+    }
+
+    @Override 
+    public void run() { 
+
     }
 
     public void resize(int newRows, int newCols) {
@@ -43,8 +49,8 @@ public class PowerGrid {
         source_grid[x][y] = true; 
     }
 
-    public boolean[][] getSourcePower() { 
-        return this.source_grid; 
+    public boolean getSourcePower(int x, int y) { 
+        return this.source_grid[x][y]; 
     }
 
     public void setLight(int x, int y) {
@@ -55,6 +61,9 @@ public class PowerGrid {
         return light_grid[x][y] == 'L';
     }
 
+    public int[][] getPowerGrid() { 
+        return this.power_grid; 
+    }
     public int getRows() { return rows; }
     public int getCols() { return cols; }
 }

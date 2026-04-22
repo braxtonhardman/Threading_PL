@@ -80,10 +80,37 @@ class Main {
                         optionLoop();
                         break;
                     case 4: // Alrogithim 
-                        int max_size = grid.getCols() * grid.getRows(); 
+                        // here call the threading algorithim. default 6x6 rn 
+                        for(int i = 0; i < grid.getCols(); i++) { // x 
+                            for(int j = 0; j < grid.getRows(); j++) {  // y
+                                if(!grid.getSourcePower(i, j)) { 
+                                    int node = grid.getPower(i, j);
+                                    System.out.println("Node Position x:"  + i + " y:" + j);
+                                    if(node == 0) { 
+                                        continue; 
+                                    }
+                                    // Get adjacent neighbors 
+                                    int left, right, top, bottom; 
 
-                        for(int i = 0; i < max_size; i++) { 
-                        
+                                    left = (i - 1 >= 0) ? grid.getPower(i - 1, j) : 0; 
+                                    right = (i + 1 <= grid.getCols()) ? grid.getPower(i + 1, j) : 0;
+                                    top = (j - 1 >= 0) ? grid.getPower(i, j - 1) : 0; 
+                                    bottom = (j + 1 <= grid.getCols()) ? grid.getPower(i, j + 1) : 0; 
+
+                                    int[] values = {left, right, top, bottom};
+                                    // Get the max of the four values 
+                                    int max = 0; 
+                                    for(int k = 0; k < values.length; i ++) { 
+                                        if(values[k] > max) { 
+                                            max = values[k];
+                                        }
+                                    }
+
+                                    //max is now set 
+                                    grid.setPower(i, j, max - 1);
+                                   
+                                } 
+                            }
                             
                         }
                         
@@ -96,6 +123,13 @@ class Main {
 
             }  else { 
                 System.out.println("Error: Please Just Enter the Integer value of the option you want to select."); 
+            }
+
+
+            for(int i = 0; i < grid.getCols(); i++) { 
+                for(int j = 0; j < grid.getRows(); j++){ 
+                    System.out.println(grid.getPower(i, j) + " ");
+                }
             }
     }
 }

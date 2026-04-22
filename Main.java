@@ -1,9 +1,11 @@
 import java.util.Scanner;
+import java.lang.Thread; 
 
 class Main { 
 
     public static Scanner scanner = null; 
     public static PowerGrid grid = new PowerGrid(6, 6);
+    public static int numThreads = 4; 
 
     public static void main(String[] args) {
 
@@ -12,6 +14,29 @@ class Main {
             // Create a vriable size grid 
             
             optionLoop(); 
+            
+            // Outputs the current grid 
+            for(int i = 0; i < grid.getCols(); i++) { 
+                for(int j = 0; j < grid.getRows(); j++){ 
+                    if(grid.hasLight(i, j)) { 
+                        System.out.print("X ");
+                    } else { 
+                        System.out.print(grid.getPower(i, j) + " ");
+                    }
+                }
+                System.out.println("");
+            }
+
+            for(int i = 0; i < grid.getCols(); i++) { 
+                for(int j = 0; j < grid.getRows(); j++){ 
+                    if(grid.hasLight(i, j)) { 
+                        System.out.print("X ");
+                    } else { 
+                        System.out.print("- ");
+                    }
+                }
+                System.out.println("");
+            }
 
             scanner.close();
         } catch(Exception e) {  
@@ -28,7 +53,7 @@ class Main {
                         "2. Add light\n" + //
                         "3. Set x/y size (default is 6/6)\n" + //
                         "4. Run the program\n" + //
-                        "");
+                        "5. Enter the number of threads (default is 4)");
 
             input = scanner.nextLine();
 
@@ -79,42 +104,65 @@ class Main {
 
                         optionLoop();
                         break;
-                    case 4: // Alrogithim 
-                        // here call the threading algorithim. default 6x6 rn 
-                        for(int i = 0; i < grid.getCols(); i++) { // x 
-                            for(int j = 0; j < grid.getRows(); j++) {  // y
-                                if(!grid.getSourcePower(i, j)) { 
-                                    int node = grid.getPower(i, j);
-                                    System.out.println("Node Position x:"  + i + " y:" + j);
-                                    if(node == 0) { 
-                                        continue; 
-                                    }
-                                    // Get adjacent neighbors 
-                                    int left, right, top, bottom; 
+                        case 4:
 
-                                    left = (i - 1 >= 0) ? grid.getPower(i - 1, j) : 0; 
-                                    right = (i + 1 <= grid.getCols()) ? grid.getPower(i + 1, j) : 0;
-                                    top = (j - 1 >= 0) ? grid.getPower(i, j - 1) : 0; 
-                                    bottom = (j + 1 <= grid.getCols()) ? grid.getPower(i, j + 1) : 0; 
+                            // Divide into subgrids for each thread. 
+                            int threadRows = 2; 
+                            int threadCols = numThreads / 2;
 
-                                    int[] values = {left, right, top, bottom};
-                                    // Get the max of the four values 
-                                    int max = 0; 
-                                    for(int k = 0; k < values.length; i ++) { 
-                                        if(values[k] > max) { 
-                                            max = values[k];
+                            // width of each chunk 
+                            int chunkWidth = grid.getCols() / threadCols; 
+                            int chunkHeight = grid.getRows() / threadRows; 
+
+                            for(int row = 0; row < threadRows; row++) {
+                                for(int col = 0; col < threadCols; col++) {
+                                    int startX = col * chunkWidth;
+                                    int startY = row * chunkHeight;
+                                    int index = row * threadCols + col;
+                            
+                                    // Copy directly while creating the thread
+                                    threads[index] = new PowerGridThread(
+                                        grid, startX, startY, chunkWidth, chunkHeight
+                                    );
+                                }
+                            }
+
+
+                            boolean changed = true;
+                            while(changed) {
+                                changed = false;
+                                for(int i = 0; i < grid.getCols(); i++) {
+                                    for(int j = 0; j < grid.getRows(); j++) {
+                                        if(!grid.getSourcePower(i, j)) {
+                                            int left   = (i - 1 >= 0)              ? grid.getPower(i-1, j) : 0;
+                                            int right  = (i + 1 < grid.getCols())  ? grid.getPower(i+1, j) : 0;
+                                            int top    = (j - 1 >= 0)              ? grid.getPower(i, j-1) : 0;
+                                            int bottom = (j + 1 < grid.getRows())  ? grid.getPower(i, j+1) : 0;
+                        
+                                            int max = Math.max(Math.max(left, right), Math.max(top, bottom));
+                                            int newPower = Math.max(0, max - 1); // floor at 0
+                                            
+                                            // Check if position is light
+                                            if(grid.hasLight(i, j)) { 
+                                                if(newPower > 5) { 
+                                                    grid.setLight(i, j);
+                                                }
+                                            }
+
+                                            if(newPower != grid.getPower(i, j)) {
+                                                grid.setPower(i, j, newPower);
+                                                changed = true;
+                                            }
+
+                                            
                                         }
                                     }
-
-                                    //max is now set 
-                                    grid.setPower(i, j, max - 1);
-                                   
-                                } 
+                                }
                             }
-                            
-                        }
-                        
-                        break; 
+                            break; 
+                        case 5: 
+                            System.out.println("Enter the number of threads: ");
+
                     default: 
                         System.out.println("Error: Please select a value between 1 and 4");
                         break;  
@@ -126,10 +174,6 @@ class Main {
             }
 
 
-            for(int i = 0; i < grid.getCols(); i++) { 
-                for(int j = 0; j < grid.getRows(); j++){ 
-                    System.out.println(grid.getPower(i, j) + " ");
-                }
-            }
+            
     }
 }

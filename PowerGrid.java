@@ -13,6 +13,29 @@ public class PowerGrid implements Runnable {
         this.source_grid = new boolean[rows][cols];
     }
 
+    /*
+        Constructor is for creation of threads 
+    */
+    public PowerGrid(PowerGrid grid, int startX, int startY, int width, int height) { 
+        int x = grid.getCols() - startX; 
+        int y = grid.getRows() - startY; 
+        int[][] new_power_grid = new int[x][y]; 
+        char[][] new_light_grid = new char[x][y];
+        boolean[][] new_source_grid = new boolean[x][y];
+        for(int i = startX; i < grid.getCols(); i++) { 
+            for(int j = startY; j < grid.getRows(); j++) { 
+                new_power_grid[i][j] = grid.getPower(i, j);
+                new_light_grid[i][j]
+                new_source_grid[i][j]
+            }
+        }
+
+        this.power_grid = new_power_grid; 
+
+
+
+    }   
+
     @Override 
     public void run() { 
 
@@ -54,11 +77,11 @@ public class PowerGrid implements Runnable {
     }
 
     public void setLight(int x, int y) {
-        light_grid[x][y] = 'L'; 
+        light_grid[x][y] = 'X'; 
     }
 
     public boolean hasLight(int x, int y) {
-        return light_grid[x][y] == 'L';
+        return light_grid[x][y] == 'X';
     }
 
     public int[][] getPowerGrid() { 

@@ -18,40 +18,13 @@ class Main {
             scanner = new Scanner(System.in);
             // Create a vriable size grid 
             
-            optionLoop(); 
-        
-            // for(int i = 0; i < grid.getCols(); i++) { 
-            //     for(int j = 0; j < grid.getRows(); j++){ 
-            //         if(grid.hasLight(i, j)) { 
-            //             System.out.print("X ");
-            //         } else { 
-            //             System.out.print("- ");
-            //         }
-            //     }
-            //     System.out.println("");
-            // }
+            optionLoop();  
 
             scanner.close();
         } catch(Exception e) {  
             System.out.println(e.getMessage()); 
         }
         
-    }
-
-    public static void setupCommunication(Thread[] threads)
-    {
-
-        /*
-            Threads are split by top row and bottom row
-        */
-        for(int i = 0; i < threads.length; i++) { 
-            // recv = new LinkedBlockingQueue<Double>( );
-            // other.send = recv;
-            
-            // send = new LinkedBlockingQueue<Double>();
-            // other.recv = send;
-        }
-     
     }
    
     public static void optionLoop() { 
@@ -95,7 +68,7 @@ class Main {
                         } else { 
                             x = Integer.valueOf(s[0]);
                             y = Integer.valueOf(s[1]);
-                            grid.setLight(x, y);
+                            grid.setLight(x, y, '-');
                         }
 
                         optionLoop();
@@ -117,17 +90,14 @@ class Main {
 
                             
                             // Divide into subgrids for each thread. 
-                            System.out.println("----Main Subgrid Seperation----");
-                            System.out.println("Thread Cols: " + numThreads);
-
-                            // width of each chunk 
-                            int chunkWidth = grid.getCols() / numThreads; 
-                            int chunkHeight = grid.getRows() / numThreads; 
-
-                            int extraWidth = grid.getCols() % numThreads; 
-                            int extraHeight = grid.getRows() % numThreads; 
+                            // System.out.println("----Main Subgrid Seperation----");
 
                             int threadCols = numThreads / 2; 
+                            int chunkWidth = grid.getCols() / threadCols; 
+                            int chunkHeight = grid.getRows() / threadCols; 
+                            int extraWidth = grid.getCols() % threadCols; 
+                            int extraHeight = grid.getRows() % threadCols; 
+                            // System.out.println("Thread Cols: " + threadCols);
 
                             thread_objects = new PowerGrid[2][threadCols];
 
@@ -247,9 +217,15 @@ class Main {
                                     for(int i = 0; i < chunk.getCols(); i++) {
                                         for(int j = 0; j < chunk.getRows(); j++) {
                                             grid.setPower(startX + i, startY + j, chunk.getPower(i, j));
-                                            if(chunk.hasLight(i, j)) {
-                                                grid.setLight(startX + i, startY + j);
+                                            
+                                            if(chunk.containsLight(i, j)) { 
+                                                if(chunk.hasLight(i, j)) {
+                                                    grid.setLight(startX + i, startY + j, 'X');
+                                                } else { 
+                                                    grid.setLight(startX + i, startY + j, '-');
+                                                }
                                             }
+                                          
                                         }
                                     }
                                 }
@@ -260,7 +236,14 @@ class Main {
                         case 5: 
                             System.out.println("Enter the number of threads: ");
                             String line = scanner.nextLine();
-                            // Recall resizing mechanism 
+                            try { 
+                                numThreads = Integer.valueOf(line);
+                            } catch (Exception e) { 
+                                e.printStackTrace();
+                                System.exit(0);
+                            }
+                            optionLoop();
+                            break;
 
                     default: 
                         System.out.println("Error: Please select a value between 1 and 4");

@@ -48,8 +48,8 @@ public class PowerGrid implements Runnable {
             this.recv_vert = bottom.getSendVert();
         }
 
-        System.out.println("----SetupComm----");
-        System.out.println("Send Left: " + this.recv_left + " Send Right: " + this.recv_right + " Send Vert: " + this.recv_vert);
+        // System.out.println("----SetupComm----");
+        // System.out.println("Send Left: " + this.recv_left + " Send Right: " + this.recv_right + " Send Vert: " + this.recv_vert);
 
     }
 
@@ -163,6 +163,8 @@ public class PowerGrid implements Runnable {
             }
         }
 
+        System.out.println("Grid constructed");
+
         this.power_grid  = new_power_grid; 
         this.light_grid  = new_light_grid; 
         this.source_grid = new_source_grid;
@@ -192,8 +194,8 @@ public class PowerGrid implements Runnable {
                             int max = Math.max(Math.max(leftVal, rightVal), Math.max(topVal, bottomVal));
                             int newPower = Math.max(0, max - 1);
 
-                            if(hasLight(i, j) && newPower > 5) { 
-                                setLight(i, j);
+                            if(containsLight(i, j) && newPower > 5) { 
+                                setLight(i, j, 'X');
                             }
 
                             setPower(i, j, newPower);
@@ -217,11 +219,16 @@ public class PowerGrid implements Runnable {
     public void outputCurrentGrid() { 
         for(int j = 0; j < getRows(); j++) {        // y is outer loop
             for(int i = 0; i < getCols(); i++) {    // x is inner loop
-                if(hasLight(i, j)) { 
-                    System.out.print("X ");
+                if(containsLight(i, j)) { 
+                    if(hasLight(i, j)) { 
+                        System.out.print("X ");
+                    } else { 
+                        System.out.print("- ");
+                    }
                 } else { 
                     System.out.print(getPower(i, j) + " ");
                 }
+                
             }
             System.out.println("");
         }
@@ -266,8 +273,12 @@ public class PowerGrid implements Runnable {
         return this.light_grid[y][x]; 
     }
 
-    public void setLight(int x, int y) {
-        light_grid[y][x] = 'X'; 
+    public boolean containsLight(int x, int y) { 
+        return light_grid[y][x] != '\0';
+    }   
+
+    public void setLight(int x, int y, char val) {
+        light_grid[y][x] = val; 
     }
 
     public boolean hasLight(int x, int y) {

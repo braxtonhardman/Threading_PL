@@ -54,44 +54,19 @@ public class PowerGrid implements Runnable {
     }
 
     private void write() throws InterruptedException { 
-        if(left) { 
-            // System.out.println("Writing Left..."); 
-
-            // Write first column (x=0) to send_left
-            for(int j = 0; j < rows; j++) { 
-                // System.out.print(" " + power_grid[0][j]);
-                send_left.put(power_grid[0][j]);
-            }
+        if(left) {
+            // first column = x=0, all y
+            for(int j = 0; j < rows; j++) send_left.put(power_grid[j][0]);
         }
-    
-        if(right) { 
-            // System.out.println("Writing Right..."); 
-
-            // Write last column (x=cols-1) to send_right
-            for(int j = 0; j < rows; j++) { 
-                // System.out.print(" " + power_grid[cols - 1][j]);
-                send_right.put(power_grid[cols - 1][j]);
-            }
+        if(right) {
+            for(int j = 0; j < rows; j++) send_right.put(power_grid[j][cols-1]);
         }
-    
-        if(top) { 
-            // System.out.println("Writing Top..."); 
-
-            // Write first row (y=0) to send_top
-            for(int i = 0; i < cols; i++) { 
-                // System.out.print(" " + power_grid[i][0]);
-                send_vert.put(power_grid[i][0]);
-            }
+        if(top) {
+            // first row = y=0, all x
+            for(int i = 0; i < cols; i++) send_vert.put(power_grid[0][i]);
         }
-    
-        if(bottom) { 
-            // System.out.println("Writing Bottom..."); 
-
-            // Write last row (y=rows-1) to send_bottom
-            for(int i = 0; i < cols; i++) { 
-                // System.out.print(" " + power_grid[i][rows - 1]);
-                send_vert.put(power_grid[i][rows - 1]);
-            }
+        if(bottom) {
+            for(int i = 0; i < cols; i++) send_vert.put(power_grid[rows-1][i]);
         }
     }
 
@@ -164,10 +139,10 @@ public class PowerGrid implements Runnable {
         this.send_vert = new LinkedBlockingQueue<>();
      
 
-        // System.out.println("----Power Grid Output----");
-        // System.out.println("Old Grid Size: " + grid.getCols() + "x" + grid.getRows());
-        // System.out.println("New Grid Size: " + width + "x" + height);
-        // System.out.println("StartX: " + startX + " StartY: " + startY); 
+        System.out.println("----Power Grid Output----");
+        System.out.println("Old Grid Size: " + grid.getCols() + "x" + grid.getRows());
+        System.out.println("New Grid Size: " + width + "x" + height);
+        System.out.println("StartX: " + startX + " StartY: " + startY); 
         this.rows = height;
         this.cols = width;
 
@@ -197,52 +172,39 @@ public class PowerGrid implements Runnable {
 
     @Override 
     public void run() {     
-
-        // Exchange information first 
-        try { 
-            write(); 
-            read(); 
-        } catch (Exception e) { 
-            e.printStackTrace();
-        }
-
-        int totalRuns = totalRows * totalCols; 
-        for(int run = 0; run < totalRuns; run++) { 
-            boolean changed = true;
-            while(changed) {
-                changed = false;
+        try {
+            int totalRuns = totalRows * totalCols; 
+            write();
+            read();
+            for(int run = 0; run < totalRuns; run++) { 
+                // Exchange information each iteration
+                write(); 
+                read(); 
+                
                 for(int i = 0; i < getCols(); i++) {
                     for(int j = 0; j < getRows(); j++) {
                         if(!getSourcePower(i, j)) {
-                            int left   = (i - 1 >= 0)         ? getPower(i-1, j) : 0;
-                            int right  = (i + 1 < getCols())  ? getPower(i+1, j) : 0;
-                            int top    = (j - 1 >= 0)         ? getPower(i, j-1) : 0;
-                            int bottom = (j + 1 < getRows())  ? getPower(i, j+1) : 0;
-        
-                            int max = Math.max(Math.max(left, right), Math.max(top, bottom));
-                            int newPower = Math.max(0, max - 1); // floor at 0
-                            
-                            // Check if position is light
-                            if(hasLight(i, j)) { 
-                                if(newPower > 5) { 
-                                    setLight(i, j);
-                                }
+                            int leftVal   = (i - 1 >= 0)    ? getPower(i-1, j) : (left   ? ghost_left[j]   : 0);
+                            int rightVal  = (i + 1 < cols)  ? getPower(i+1, j) : (right  ? ghost_right[j]  : 0);
+                            int topVal    = (j - 1 >= 0)    ? getPower(i, j-1) : (top    ? ghost_top[i]    : 0);
+                            int bottomVal = (j + 1 < rows)  ? getPower(i, j+1) : (bottom ? ghost_bottom[i] : 0);
+
+                            int max = Math.max(Math.max(leftVal, rightVal), Math.max(topVal, bottomVal));
+                            int newPower = Math.max(0, max - 1);
+
+                            if(hasLight(i, j) && newPower > 5) { 
+                                setLight(i, j);
                             }
 
-                            if(newPower != getPower(i, j)) {
-                                setPower(i, j, newPower);
-                                changed = true;
-                            }
-
-                            
+                            setPower(i, j, newPower);
                         }
                     }
                 }
-            }
-        }   
-        
-
-    }   
+            }   
+        } catch(Exception e) { 
+            e.printStackTrace();
+        }
+    } 
 
     public int getStartX() { 
         return this.startX;

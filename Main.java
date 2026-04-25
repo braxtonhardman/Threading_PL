@@ -94,9 +94,9 @@ class Main {
 
                             int threadCols = numThreads / 2; 
                             int chunkWidth = grid.getCols() / threadCols; 
-                            int chunkHeight = grid.getRows() / threadCols; 
+                            int chunkHeight = grid.getRows() / 2; 
                             int extraWidth = grid.getCols() % threadCols; 
-                            int extraHeight = grid.getRows() % threadCols; 
+                            int extraHeight = grid.getRows() % 2; 
                             // System.out.println("Thread Cols: " + threadCols);
 
                             thread_objects = new PowerGrid[2][threadCols];
@@ -105,7 +105,7 @@ class Main {
                             for(int row = 0; row < 2; row++) {
                                 for(int col = 0; col < threadCols; col++) {
                                     int startX = col * chunkWidth;
-                                    int startY = row * chunkWidth;
+                                    int startY = row * chunkHeight;
 
                                     // For odd number grids append to the last grid of each row 
                                     // System.out.println("Grid: " + row + " " + col);

@@ -139,10 +139,10 @@ public class PowerGrid implements Runnable {
         this.send_vert = new LinkedBlockingQueue<>();
      
 
-        System.out.println("----Power Grid Output----");
-        System.out.println("Old Grid Size: " + grid.getCols() + "x" + grid.getRows());
-        System.out.println("New Grid Size: " + width + "x" + height);
-        System.out.println("StartX: " + startX + " StartY: " + startY); 
+        // System.out.println("----Power Grid Output----");
+        // System.out.println("Old Grid Size: " + grid.getCols() + "x" + grid.getRows());
+        // System.out.println("New Grid Size: " + width + "x" + height);
+        // System.out.println("StartX: " + startX + " StartY: " + startY); 
         this.rows = height;
         this.cols = width;
 
@@ -237,18 +237,21 @@ public class PowerGrid implements Runnable {
     public void resize(int newRows, int newCols) {
         int[][] new_power_grid = new int[newRows][newCols];
         char[][] new_light_grid = new char[newRows][newCols];
-    
+        boolean[][] new_source_grid= new boolean[newRows][newCols];
+        
         // Copy old data over, only up to the smaller of old/new dimensions
         for (int i = 0; i < Math.min(rows, newRows); i++) {
             for (int j = 0; j < Math.min(cols, newCols); j++) {
                 new_power_grid[i][j] = power_grid[i][j];
                 new_light_grid[i][j] = light_grid[i][j];
+                new_source_grid[i][j]  = source_grid[i][j];
             }
         }
     
         // Replace old grids
         this.power_grid = new_power_grid;
         this.light_grid = new_light_grid;
+        this.source_grid = new_source_grid;
         this.rows = newRows;
         this.cols = newCols;
     }
